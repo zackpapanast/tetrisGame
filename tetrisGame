@@ -1,0 +1,716 @@
+/* 
+**  ZACHARIAS PAPANASTASIS
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#define MAX 30
+#define MIN 6
+void emfanisitablo(int y,int x,int** table,char name[],int round,int points,int lines);
+void topo8etisi(int y,int x, int** table);
+int kinisi(int y,int x,int** table,char name[],int round,int points,int lines,int bonus,int** table2,char move[],int len);
+void ka8odos(int y,int x,int** table,int gps,int kind,int middle);
+void copy(int y,int x,int** table,int** table2);
+void score(int y,int x,int** table,int *ppoints,int *plines,int *pbonus);
+int main(){
+    
+    int x,y,i,j;
+    int level,len,ans=1;
+    int round=0,points=0,lines=0,bonus=0;
+    int **table;
+    int **table2;
+    char name[20];
+    int ex=0,exit=0;
+    char move[20];
+    int *ppoints,*plines,*pbonus;
+    ppoints=&points;
+    plines=&lines;
+    pbonus=&bonus;
+    
+    printf("******* ****** *******  *****  *   *****\n");
+    printf("   *    *         *     *  *   *   **\n");
+    printf("   *    *****     *     **     *   *****\n");
+    printf("   *    *         *     * *    *      **\n");
+    printf("   *    ******    *     *   *  *   *****\n");
+    printf("ODHGIES: \n\t Oi diastaseis tou pinaka 8a prepei na einai megaluteres tou 6 ,\n\t mikroteres tou 30kai to ypsos n einai toulaxiston\n\t diplasio tou platous\n");
+    printf("Odhgies kinisis:\n");
+    printf("\t1.'r' or 'R' ( move right)\n");
+    printf("\t2.'l' or 'L' ( move left)\n");
+    printf("\t3.'c' or 'C' ( rotate clockwise)\n");
+    printf("\t4.'a' or 'A' ( rotate anticlockwise)\n");
+    printf("\t5.'x' or 'X' ( EXIT)\n");
+    printf("\nENARXI PAIXNIDIOY\n\n");
+    printf("dwse to platos(stiles) tou pinaka: \n");    
+    scanf("%d",&x);
+    printf("dwse to ypsos(grammes) tou pinaka:\n"); 
+    scanf("%d",&y); 
+    while(x<MIN || x>MAX || y<MIN || y>MAX || (y<2*x)){
+               printf("error.dwse pali tis diastaseis.\n Platos:");
+               scanf("%d",&x);
+               printf("\n Ypsos:");
+               scanf("%d",&y);
+    }//while
+    printf("plikrologise to onoma tou paixti:\n");
+    scanf("%s",name);
+    do{
+    printf("Epelekse diskolia.\n1.easy\n2.hard\n");
+    scanf("%d",&level);    
+    }while(level!=1 && level!=2);
+    
+    table=(int**)malloc(y*sizeof(int*));                                            //desmeusi pinaka table
+    for(i=0; i<y; i++){
+             table[i]=(int*)malloc(x*sizeof(int));
+    }//for
+    table2=(int**)malloc(y*sizeof(int*));                                           //desmeusi mnhmhs pinaka table2
+    for(i=0; i<y; i++){
+             table2[i]=(int*)malloc(x*sizeof(int));
+    }//for
+    
+    for(i=0; i<y; i++){                                                              //gemisma pinakwn
+            for(j=0; j<x; j++){
+                     table[i][j]=1;
+                     table2[i][j]=1;
+            }//for
+    }//for
+    
+    while(exit!=1){
+    if(ans==1){   
+    topo8etisi(y,x,table);    
+    emfanisitablo(y,x,table,name,round,points,lines);
+    }//if
+    while(ex==0&&exit==0){
+           ex=1;
+           printf("dwse ti kinisi tou sxhmatos:\n");
+           scanf("%s",move);
+           len=strlen(move);
+           i=0;
+           while(i<len&&ex==1){
+           if (move[i]!='l'&&move[i]!='L'&&move[i]!='r'&&move[i]!='R'&&move[i]!='c'&&move[i]!='C'&&move[i]!='a'&&move[i]!='A'&&move[i]!='x'&&move[i]!='X'){
+                ex=0;
+                printf("edwses la8os kinisi!\n");
+                }//if           
+           else{
+                if(move[i]=='x'||move[i]=='X'){
+                exit=1;
+                ex=0;
+                }//if
+                else{             
+                i++  ;
+                }//else
+                                     
+           }//else
+           }//while    
+    }//while
+    if(exit!=1){
+    copy(y,x,table2,table);     
+    ans=kinisi(y,x,table,name,round,points,lines,bonus,table2,move,len);
+    if(ans==1){
+               score(y,x,table,ppoints,plines,pbonus);
+               }//if
+    if(ans==2){
+     copy(y,x,table,table2);          
+    }//if
+    
+    }//if
+    ex=0;                                         
+          
+    round++; 
+    }//while
+    printf("\nTelos Paixnidiou\n");
+               
+               
+    /*           
+    printf("%d,%d \n",x,y);
+    printf("%s\n",name); 
+    printf("%d\n",level);*/ //delete
+    
+    for(i=0; i<y; i++){                                                             //apodesmeusi mnhmhs
+             free(table[i]);
+    }
+    free(table);
+    for(i=0; i<y; i++){
+             free(table2[i]);
+    }
+    free(table2[i]);
+       
+    system("pause"); 
+    return 0;
+}//main
+
+
+
+void emfanisitablo(int y,int x,int** table,char name[],int round,int points,int lines){
+     int i,j;
+     
+     printf("Player %s, Round %d \n",name,round);
+     printf("%d points, %d lines\n",points,lines);
+     printf("\n");
+     for(i=0; i<y; i++){         
+              for(j=0; j<x; j++){
+                       if(table[i][j]==1)
+                       printf(". ");
+                       if(table[i][j]==2)
+                       printf("@ ");
+                       if(table[i][j]==3)
+                       printf("W ");
+                       if(table[i][j]==4)
+                       printf("O ");
+                       if(table[i][j]==5)
+                       printf("X ");
+                       if(table[i][j]==6)
+                       printf("# ");
+                       if(table[i][j]==7)
+                       printf("& ");
+                       if(table[i][j]==8)
+                       printf("$ ");
+              }//for
+              printf("\n");              
+     }//for
+}//emfanisi
+void topo8etisi(int y,int x,int** table){
+     int i,j,kommati,middle;
+     srand(time(NULL));
+     kommati=rand()%6;
+     middle=x/2;
+     
+     for(i=0; i<y; i++){
+              for(j=0; j<x; j++){
+                       if(kommati==0){
+                                table[0][middle]=2;
+                                table[0][middle-1]=2;
+                                table[0][middle+1]=2;
+                                table[0][middle-2]=2;
+                       }//if
+                       if(kommati==1){
+                                table[0][middle]=3;
+                                table[0][middle-1]=3;
+                                table[1][middle]=3;
+                                table[1][middle-1]=3;
+                       }//if
+                       if(kommati==2){
+                                table[0][middle]=4;
+                                table[1][middle]=4;
+                                table[1][middle+1]=4;
+                                table[1][middle+2]=4;
+                       }//if
+                       if(kommati==3){
+                                table[0][middle]=5;
+                                table[1][middle]=5;
+                                table[1][middle-1]=5;
+                                table[1][middle-2]=5;
+                       }//if
+                       if(kommati==4){
+                                table[0][middle]=6;
+                                table[1][middle]=6;
+                                table[1][middle-1]=6;
+                                table[1][middle+1]=6;
+                       }//if
+                       if(kommati==5){
+                                table[0][middle]=7;
+                                table[0][middle+1]=7;
+                                table[1][middle]=7;
+                                table[1][middle-1]=7;
+                       }//if
+                       if(kommati==6){
+                                table[0][middle]=8;
+                                table[0][middle-1]=8;
+                                table[1][middle]=8;
+                                table[1][middle+1]=8;
+                       }//if
+              }//for                                                                       
+     }//for
+}//topo8etisi
+int kinisi(int y,int x,int** table,char name[],int round,int points,int lines,int bonus,int** table2,char move[],int len){
+     int i,j;
+     int gps=0,rot=0;
+     int middle;
+     int kind;
+     char ch;
+     int ans=0;
+     middle=x/2;
+      
+     for(i=0; i<len; i++){
+              
+              if(move[i]=='r'||move[i]=='R'){
+                                             gps+=1;
+              }
+              if(move[i]=='l'||move[i]=='L'){
+                                             gps-=1;
+              }
+              if(move[i]=='c'||move[i]=='C'){
+                                             rot+=3;
+              }
+              if(move[i]=='a'||move[i]=='A'){
+                                             rot+=1;
+              }
+     }//for                                        
+     rot=rot%4;
+     
+     if(table[0][middle]==2){                                                                     //@@@@
+                              table[0][middle]=1;
+                              table[0][middle-1]=1;
+                              table[0][middle+1]=1;
+                              table[0][middle-2]=1;
+                              
+                             if(rot==0||rot==2){
+                                                table[0][middle+gps]=2;
+                                                table[0][middle-1+gps]=2;
+                                                table[0][middle+1+gps]=2;
+                                                table[0][middle-2+gps]=2;
+                                                kind=20;
+                             }//if
+                             else{
+                                  table[0][middle+gps]=2;
+                                  table[1][middle+gps]=2;
+                                  table[2][middle+gps]=2;
+                                  table[3][middle+gps]=2;
+                                  kind=21;
+                             }//else
+     }//if
+     if(table[0][middle]==3){                                                                     // WW
+                             table[0][middle]=1;                                                  // WW
+                             table[0][middle-1]=1;
+                             table[1][middle]=1;
+                             table[1][middle-1]=1;
+                             
+                             table[0][middle+gps]=3;
+                             table[0][middle-1+gps]=3;
+                             table[1][middle+gps]=3;
+                             table[1][middle-1+gps]=3;
+                             kind=3;
+     }//if
+     if(table[0][middle]==4){                                                               // O
+                             table[0][middle]=1;                                            // OOO   
+                             table[1][middle]=1;
+                             table[1][middle+1]=1;
+                             table[1][middle+2]=1;
+                            if(rot==0){
+                                       table[0][middle+gps]=4;
+                                       table[1][middle+gps]=4;
+                                       table[1][middle+1+gps]=4;
+                                       table[1][middle+2+gps]=4;
+                                       kind=40;
+                            }//if 
+                            else if(rot==1){
+                                 table[0][middle+gps]=4;
+                                 table[1][middle+gps]=4;
+                                 table[2][middle+gps]=4;
+                                 table[2][middle-1+gps]=4;
+                                 kind=41;
+                            }//elseif 
+                            else if(rot==2){
+                                 table[0][middle+gps]=4;
+                                 table[0][middle-1+gps]=4;
+                                 table[0][middle+1+gps]=4;
+                                 table[1][middle+1+gps]=4;
+                                 kind=42;
+                            }//elseif     
+                            else {
+                                 table[0][middle+gps]=4;
+                                 table[0][middle+1+gps]=4;
+                                 table[1][middle+gps]=4;
+                                 table[2][middle+gps]=4;
+                                 kind=43;
+                            }//else
+     }//if 
+     if(table[0][middle]==5){                                                                  //   X
+                             table[0][middle]=1;                                               // XXX
+                             table[1][middle]=1;
+                             table[1][middle-1]=1;
+                             table[1][middle-2]=1;
+                             if(rot==0){
+                                        table[0][middle+gps]=5;
+                                        table[1][middle+gps]=5;
+                                        table[1][middle-1+gps]=5;
+                                        table[1][middle-2+gps]=5;
+                                        kind=50;
+                             }//if
+                             else if(rot==1){
+                                  table[0][middle+gps]=5;
+                                  table[0][middle-1+gps]=5;
+                                  table[1][middle+gps]=5;
+                                  table[2][middle+gps]=5;
+                                  kind=51;
+                             }//elseif
+                             else if(rot==2){
+                                  table[0][middle+gps]=5;
+                                  table[0][middle+1+gps]=5;
+                                  table[0][middle-1+gps]=5;
+                                  table[1][middle-1+gps]=5;
+                                  kind=52;
+                             }//elseif
+                             else{
+                                  table[0][middle+gps]=5;
+                                  table[1][middle+gps]=5;
+                                  table[2][middle+gps]=5;
+                                  table[2][middle+1+gps]=5;
+                                  kind=53;
+                             }//else
+     }//if
+     if(table[0][middle]==6){                                                                     //  #
+                             table[0][middle]=1;                                                  // ###
+                             table[1][middle]=1;
+                             table[1][middle-1]=1;
+                             table[1][middle+1]=1;
+                             table[0][middle+gps]=6;
+                             table[1][middle+gps]=6;
+                             if(rot==0){
+                                        table[1][middle-1+gps]=6;
+                                        table[1][middle+1+gps]=6;
+                                        kind=60;
+                             }//if
+                             else if(rot==1){
+                                  table[1][middle-1+gps]=6;
+                                  table[2][middle+gps]=6;
+                                  kind=61;
+                             }//elseif
+                             else if(rot==2){
+                                  table[0][middle-1+gps]=6;
+                                  table[0][middle+1+gps]=6;
+                                  kind=62;
+                             }//elseif
+                             else{
+                                  table[1][middle+1+gps]=6;
+                                  table[2][middle+gps]=6;
+                                  kind=63;
+                             }//else
+     }//if
+     if(table[0][middle]==7){                                                                        //  &&
+                             table[0][middle]=1;                                                     // &&
+                             table[0][middle+1]=1;
+                             table[1][middle]=1;
+                             table[1][middle-1]=1;
+                             table[0][middle+gps]=7;
+                             table[1][middle+gps]=7;
+                             
+                             if(rot==0||rot==2){
+                                                table[1][middle-1+gps]=7;
+                                                table[0][middle+1+gps]=7;
+                                                kind=70;
+                             }//if
+                             else{
+                                  table[1][middle+1+gps]=7;
+                                  table[2][middle+1+gps]=7;
+                                  kind=71;
+                             }//else
+     }//if
+     if(table[0][middle]==8){
+                             table[0][middle]=1;
+                             table[0][middle-1]=1;
+                             table[1][middle]=1;
+                             table[1][middle+1]=1;
+                             table[0][middle+gps]=8;
+                             table[1][middle+gps]=8;
+                             
+                             if(rot==0||rot==2){
+                                                table[0][middle-1+gps]=8;
+                                                table[1][middle+1+gps]=8;
+                                                kind=80;
+                             }//if
+                             else{
+                                  table[1][middle-1+gps]=8;
+                                  table[2][middle-1+gps]=8;
+                                  kind=81;
+                             }//else
+     }//if
+     emfanisitablo(y,x,table,name,round,points,lines);
+     
+     do{
+           printf("Drop piece?  'y' or 'n' \n");
+           scanf(" %c",&ch);
+           if(ch=='y'){
+                       ans=1;}
+           if(ch=='n'){
+                       ans=2;}
+                       
+     }while(ans==0);//while
+     if(ans==1){ 
+     ka8odos(y,x,table,gps,kind,middle);
+     
+     }//if
+     
+      
+     return ans;                                                                   
+}//kinisi
+void ka8odos(int y,int x,int** table,int gps,int kind,int middle){
+     int i,j;
+     
+     
+     if(kind==20){                                                                                                        //@@@@
+                 for(i=0; i<=(y-2); i++){
+                  
+                 if(table[i+1][middle-2+gps]==1&&table[i+1][middle-1+gps]==1&&table[i+1][middle+gps]==1&&table[i+1][middle+1+gps]==1){
+                      table[i][middle-2+gps]=1;
+                      table[i][middle-1+gps]=1;
+                      table[i][middle+gps]=1;
+                      table[i][middle+1+gps]=1;
+                      table[i+1][middle-2+gps]=2;
+                      table[i+1][middle-1+gps]=2;
+                      table[i+1][middle+gps]=2;
+                      table[i+1][middle+1+gps]=2;
+                 }else
+                      i=y;    
+                 }//for
+     }//if
+     if(kind==21){                                                                                                                    // @                                                                                                                                                                                                                                               
+                  for(i=3; i<=(y-2); i++){                                                                                            // @ 
+                           if(table[i+1][middle+gps]==1){                                                                             // @
+                                                         table[i-3][middle+gps]=1;                                                    // @
+                                                         table[i+1][middle+gps]=2;
+                           }else
+                                i=y;
+                  }//for
+     }//if
+     if(kind==3){                                                                                                                     // WW
+                 for(i=1; i<=(y-2); i++){                                                                                             // WW
+                          if(table[i+1][middle+gps]==1&&table[i+1][middle-1+gps]==1){
+                                                         table[i-1][middle+gps]=1;
+                                                         table[i-1][middle-1+gps]=1;
+                                                         table[i+1][middle+gps]=3;
+                                                         table[i+1][middle-1+gps]=3;
+                          }else
+                               i=y;
+                 }//for
+     }//if
+     if(kind==40){                                                                                                                    // O
+                  for(i=1; i<=(y-2); i++){                                                                                            // OOO
+                           if(table[i+1][middle+gps]==1&&table[i+1][middle+1+gps]==1&&table[i+1][middle+2+gps]==1){
+                                                         table[i-1][middle+gps]=1;
+                                                         table[i][middle+1+gps]=1;
+                                                         table[i][middle+2+gps]=1;
+                                                         table[i+1][middle+gps]=4;
+                                                         table[i+1][middle+1+gps]=4;
+                                                         table[i+1][middle+2+gps]=4;
+                           }else
+                                i=y;
+                  }//for                                                         
+     }//if          
+     if(kind==41){                                                                                                                    //  O
+                  for(i=2; i<=(y-2); i++){                                                                                            //  O
+                           if(table[i+1][middle+gps]==1&&table[i+1][middle-1+gps]==1){                                                // OO
+                                                          table[i-2][middle+gps]=1;
+                                                          table[i][middle-1+gps]=1;
+                                                          table[i+1][middle+gps]=4;
+                                                          table[i+1][middle-1+gps]=4;
+                           }else
+                                i=y;
+                  }//for
+     }//if
+     if(kind==42){                                                                                                                    // OOO
+                  for(i=1; i<(y-1); i++){                                                                                             //   O
+                           if(table[i][middle+gps]==1&&table[i][middle-1+gps]==1&&table[i+1][middle+1+gps]==1){
+                                                         table[i-1][middle+gps]=1;
+                                                         table[i-1][middle-1+gps]=1;
+                                                         table[i-1][middle+1+gps]=1;
+                                                         table[i][middle+gps]=4;
+                                                         table[i][middle-1+gps]=4;
+                                                         table[i+1][middle+1+gps]=4;
+                           }else
+                                i=y;
+                  }//for
+     }//if
+     if(kind==43){                                                                                                                    // OO
+                  for(i=2; i<=(y-2); i++){                                                                                            // O
+                           if(table[i+1][middle+gps]==1&&table[i-1][middle+1+gps]==1){                                                // O
+                                                          table[i-2][middle+gps]=1;
+                                                          table[i-2][middle+1+gps]=1;
+                                                          table[i+1][middle+gps]=4;
+                                                          table[i-1][middle+1+gps]=4;
+                           }else
+                                i=y;
+                  }//for
+     }//if 
+     if(kind==50){
+                  for(i=1; i<=(y-2); i++){                                                                                            //   X
+                           if(table[i+1][middle+gps]==1&&table[i+1][middle-1+gps]==1&&table[i+1][middle-2+gps]==1){                   // XXX
+                                                         table[i-1][middle+gps]=1;
+                                                         table[i][middle-1+gps]=1;
+                                                         table[i][middle-2+gps]=1;
+                                                         table[i+1][middle+gps]=5;
+                                                         table[i+1][middle-1+gps]=5;
+                                                         table[i+1][middle-2+gps]=5;
+                           }else
+                                i=y;
+                  }//for                                                         
+     }//if
+     if(kind==51){
+                  for(i=2; i<=(y-2); i++){                                                                                            // XX
+                           if(table[i+1][middle+gps]==1&&table[i-1][middle-1+gps]==1){                                                //  X
+                                                          table[i-2][middle+gps]=1;                                                   //  X
+                                                          table[i-2][middle-1+gps]=1;
+                                                          table[i+1][middle+gps]=5;
+                                                          table[i-1][middle-1+gps]=5;
+                           }else
+                                i=y;
+                  }//for
+     }//if
+     if(kind==52){                                                                                                                    // XXX
+                  for(i=1; i<(y-1); i++){                                                                                             // X
+                           if(table[i][middle+gps]==1&&table[i][middle+1+gps]==1&&table[i+1][middle-1+gps]==1){
+                                                         table[i-1][middle+gps]=1;
+                                                         table[i-1][middle-1+gps]=1;
+                                                         table[i-1][middle+1+gps]=1;
+                                                         table[i][middle+gps]=5;
+                                                         table[i][middle+1+gps]=5;
+                                                         table[i+1][middle-1+gps]=5;
+                           }else
+                                i=y;
+                  }//for
+     }//if
+     if(kind==53){                                                                                                                    // X
+                  for(i=2; i<=(y-2); i++){                                                                                            // X
+                           if(table[i+1][middle+gps]==1&&table[i+1][middle+1+gps]==1){                                                // XX
+                                                          table[i-2][middle+gps]=1;
+                                                          table[i][middle+1+gps]=1;
+                                                          table[i+1][middle+gps]=5;
+                                                          table[i+1][middle+1+gps]=5;
+                           }else
+                                i=y;
+                  }//for
+     }//if
+     if(kind==60){
+                  for(i=1; i<=(y-2); i++){                                                                                            //  #
+                           if(table[i+1][middle+gps]==1&&table[i+1][middle-1+gps]==1&&table[i+1][middle+1+gps]==1){                   // ###
+                                                         table[i-1][middle+gps]=1;
+                                                         table[i][middle-1+gps]=1;
+                                                         table[i][middle+1+gps]=1;
+                                                         table[i+1][middle+gps]=6;
+                                                         table[i+1][middle-1+gps]=6;
+                                                         table[i+1][middle+1+gps]=6;
+                           }else
+                                i=y;
+                  }//for                                                         
+     }//if
+     if(kind==61){
+                  for(i=1; i<=(y-2); i++){                                                                                          //   #
+                         if(table[i+2][middle+gps]==1&&table[i+1][middle-1+gps]==1){                                                //  ## 
+                                                          table[i-1][middle+gps]=1;                                                 //   # 
+                                                          table[i][middle-1+gps]=1;
+                                                          table[i+2][middle+gps]=6;
+                                                          table[i+1][middle-1+gps]=6;
+                           }else
+                                i=y;
+                  }//for
+     }//if
+     if(kind==62){ 
+                  for(i=1; i<=(y-2); i++){                                                                                            // ###
+                           if(table[i+1][middle+gps]==1&&table[i][middle-1+gps]==1&&table[i][middle+1+gps]==1){                       //  #
+                                                         table[i-1][middle+gps]=1;
+                                                         table[i-1][middle-1+gps]=1;
+                                                         table[i-1][middle+1+gps]=1;
+                                                         table[i+1][middle+gps]=6;
+                                                         table[i][middle-1+gps]=6;
+                                                         table[i][middle+1+gps]=6;
+                           }else
+                                i=y;
+                  }//for                                                         
+     }//if
+     if(kind==63){
+                  for(i=1; i<=(y-2); i++){                                                                                          //   #
+                         if(table[i+2][middle+gps]==1&&table[i+1][middle+1+gps]==1){                                                //  ## 
+                                                          table[i-1][middle+gps]=1;                                                 //   # 
+                                                          table[i][middle+1+gps]=1;
+                                                          table[i+2][middle+gps]=6;
+                                                          table[i+1][middle+1+gps]=6;
+                           }else
+                                i=y;
+                  }//for
+     }//if
+     if(kind==70){
+                  for(i=1; i<=(y-2); i++){                                                                                          //  &&
+                         if(table[i+1][middle+gps]==1&&table[i+1][middle-1+gps]==1&&table[i][middle+1+gps]==1){                     // &&                          //  &&
+                                                          table[i-1][middle+gps]=1;                                                  
+                                                          table[i-1][middle+1+gps]=1;
+                                                          table[i][middle-1+gps]=1;
+                                                          table[i+1][middle+gps]=7;
+                                                          table[i+1][middle-1+gps]=7;
+                                                          table[i][middle+1+gps]=7;
+                         }else
+                              i=y;
+                  }//for
+     }//if
+     if(kind==71){                                                                                                                   // &
+                  for(i=1; i<(y-2); i++){                                                                                            // &&  
+                          if(table[i+1][middle+gps]==1&&table[i+2][middle+1+gps]==1){                                                //  &
+                                                           table[i-1][middle+gps]=1;
+                                                           table[i][middle+1+gps]=1;
+                                                           table[i+1][middle+gps]=7;
+                                                           table[i+2][middle+1+gps]=7;
+                          }else
+                               i=y;
+                  }//for
+     }//if
+     if(kind==80){
+                  for(i=1; i<=(y-2); i++){                                                                                          //  $$
+                         if(table[i+1][middle+gps]==1&&table[i+1][middle+1+gps]==1&&table[i][middle-1+gps]==1){                     //   $$                        //  &&
+                                                          table[i-1][middle+gps]=1;                                                  
+                                                          table[i-1][middle-1+gps]=1;
+                                                          table[i][middle+1+gps]=1;
+                                                          table[i+1][middle+gps]=8;
+                                                          table[i+1][middle+1+gps]=8;
+                                                          table[i][middle-1+gps]=8;
+                         }else
+                              i=y;
+                  }//for
+     }//if
+     if(kind==81){                                                                                                                   //  $
+                  for(i=1; i<(y-2); i++){                                                                                            // $$  
+                          if(table[i+1][middle+gps]==1&&table[i+2][middle-1+gps]==1){                                                // $
+                                                           table[i-1][middle+gps]=1;
+                                                           table[i][middle-1+gps]=1;
+                                                           table[i+1][middle+gps]=8;
+                                                           table[i+2][middle-1+gps]=8;
+                          }else
+                               i=y;
+                  }//for
+     }//if
+                                                     
+}//ka8odos
+void copy(int y,int x,int** table,int** table2){
+     int i,j;
+     
+     for(i=0; i<y; i++){
+              for(j=0; j<x; j++){
+                       table[i][j]=table2[i][j];
+                       }
+              }
+}//copy
+void score(int y,int x,int** table,int *ppoints,int *plines,int *pbonus){
+int i,j,k,l;
+int flag=0;
+int combo=0;
+    for(i=0; i<y; i++){
+             
+             for(j=0; j<x; j++){
+                      if(table[i][j]==1){
+                                         flag=1;
+                      }//if
+             }//for
+             if(flag==0){
+                         *plines+=1;
+                         combo+=1;
+                         for(k=i; k>=0; k--){
+                                  for(l=0; l<x; l++){
+                                           if(k==0){
+                                                    table[k][l]=1;
+                                           }else{
+                                                 table[k][l]=table[k-1][l];
+                                           }//else
+                                  }//for
+                         }//for           
+             }//if
+             flag=0;
+    }//for
+    
+    if(combo>0){
+                *pbonus+=1;
+                *ppoints=*ppoints+1+*pbonus+combo*2; 
+    }else{
+          *pbonus=0;
+    }//else
+   
+    
+    
+}//score
+    
